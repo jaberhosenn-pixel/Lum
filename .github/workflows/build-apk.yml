@@ -1,0 +1,37 @@
+name: Build Lumora APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Unpack project
+        run: unzip -o lumora.zip
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Build
+        run: bash ci/build.sh
+
+      - name: Show errors
+        if: failure()
+        run: bash ci/errors.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lumora-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
